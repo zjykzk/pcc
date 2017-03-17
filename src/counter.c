@@ -36,3 +36,17 @@ pcc_print_counter(struct counter *counter) {
             counter->desc,
             counter->value.v);
 }
+
+struct counter_vec {
+    const char *name, *desc;
+};
+
+struct counter_vec *
+pcc_new_counter_vec(const char *name, const char *desc, char *labels[]) {
+    return NULL;
+}
+
+struct counter *
+pcc_counter_vec_labels(char *values[]) {
+    return NULL;
+}
