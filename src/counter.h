@@ -8,7 +8,7 @@ void pcc_print_counter(struct counter*);
 
 struct counter_vec;
 // `labels` must end with `NULL`
-struct counter_vec * pcc_new_counter_vec(const char *name, const char *desc, char *labels[]);
+struct counter_vec * pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]);
 // `values` must end with `NULL`
 struct counter * pcc_counter_of(struct counter_vec*, char *values[]);
 void pcc_print_counter_vec(struct counter_vec*);
