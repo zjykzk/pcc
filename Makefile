@@ -1,5 +1,13 @@
 CC := gcc
-CFLAGS := -g -Wall -Wextra -Werror -Wconversion -Wno-unused-parameter -Wpointer-arith -Wshadow -Wwrite-strings -march=native
+CFLAGS := -g -Wall \
+	-std=gnu99 \
+	-Wextra -Werror \
+	-Wconversion \
+	-Wno-unused-parameter \
+	-Wpointer-arith \
+	-Wshadow \
+	-Wwrite-strings \
+	-march=native
 
 
 OBJECTS := counter.o
