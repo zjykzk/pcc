@@ -5,7 +5,7 @@
 
 #include "value.h"
 #include "counter.h"
-
+#include "pccassert.h"
 
 #define ADVANCE(ptr, offset) (((unsigned long)ptr)+(offset))
 
@@ -138,6 +138,7 @@ new_counter(struct counter_vec *vec, const char *values[], double delta) {
 }
 
 void pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v) {
+    assert(v > 0);
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len)
 
