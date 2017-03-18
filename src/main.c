@@ -9,6 +9,8 @@ main(void)
     pcc_inc_counter(c);
     pcc_inc_counter(c);
     pcc_print_counter(c);
+    pcc_inc_counter_delta(c, 100);
+    pcc_print_counter(c);
 
     const char *l[] = {"l1", "l2", NULL};
     struct counter_vec *cvec = pcc_new_counter_vec("test vec", "test vec desc", l);
@@ -23,4 +25,5 @@ main(void)
     pcc_print_counter_vec(cvec);
     pcc_inc_counter_vec_delta(cvec, v2, 100);
     pcc_print_counter_vec(cvec);
+    pcc_inc_counter_vec_delta(cvec, v2, -1);
 }

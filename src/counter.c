@@ -28,9 +28,15 @@ pcc_new_counter(const char *name, const char *desc) {
     return counter;
 }
 
-void
+inline PCC_FORCEINLINE void
 pcc_inc_counter(struct counter *counter) {
     add(&counter->value, 1);
+}
+
+inline PCC_FORCEINLINE void
+pcc_inc_counter_delta(struct counter *counter, double v) {
+    assert(v > 0);
+    add(&counter->value, v);
 }
 
 void
