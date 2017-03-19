@@ -3,17 +3,11 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "value.h"
 #include "counter.h"
+#include "counter_private.h"
 #include "pccassert.h"
-#include "spinlock.h"
 
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
-
-struct counter {
-    const char *name, *desc;
-    pcc_value value;
-};
 
 struct counter *
 pcc_new_counter(const char *name, const char *desc) {
@@ -40,6 +34,11 @@ pcc_inc_counter_delta(struct counter *counter, double v) {
     atomic_add(&counter->value, v);
 }
 
+PCC_FORCEINLINE void
+pcc_set_counter_delta(struct counter *counter, double v) {
+    atomic_set(&counter->value, v);
+}
+
 void
 pcc_print_counter(struct counter *counter) {
     printf("name:%s\ndesc:%s\nvalue:%g\n",
@@ -47,38 +46,6 @@ pcc_print_counter(struct counter *counter) {
             counter->desc,
             counter->value.v);
 }
-
-// `labels` memory layout
-//
-// +----------------+
-// | label1 address |
-// +----------------+
-// | label2 address |
-// +----------------+
-// |      ...       |
-// +----------------+
-// | labeln address |
-// +----------------+
-// | label1 content |
-// +----------------+
-// | label2 content |
-// +----------------+
-// |      ...       |
-// +----------------+
-//
-struct counter_vec {
-    const char *name, *desc, **labels;
-    short label_count;
-    struct spinlock locker;
-
-    // the count of counter
-    struct label_value {
-        pcc_value v;
-        struct label_value *next;
-        size_t value_len;
-        char label_values[0];
-    } *counter;
-};
 
 #define COUNT_LENGTH(values, c, l)               \
     do {                                         \
@@ -103,7 +70,7 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]) {
     size_t label_count = 0, total_len = 0;
     COUNT_LENGTH(labels, label_count, total_len);
 
-    vec->label_count = (short)label_count;
+    vec->label_count = (unsigned short)label_count;
     const char **label_vec = malloc(sizeof(*label_vec) * label_count + total_len);
     if (NULL == label_vec) {
         return NULL;
@@ -148,7 +115,8 @@ new_counter(struct counter_vec *vec, const char *values[], double delta) {
     vec->counter = lv;
 }
 
-void pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v) {
+void
+pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add) {
     assert(v > 0);
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
@@ -173,7 +141,9 @@ void pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], do
             label_values = ADVANCE(label_values, vl + 1);
         }
 
-        add(&lv->v, v);
+        if (is_add) add(&lv->v, v);
+        else set(&lv->v, v);
+
         spinlock_unlock(vec->locker);
         return;
 NEXT:
@@ -182,6 +152,11 @@ NEXT:
 
     new_counter(vec, values, v);
     spinlock_unlock(vec->locker);
+}
+
+inline PCC_FORCEINLINE void
+pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v) {
+    pcc_update_counter_vec_delta(vec, values, v, true);
 }
 
 inline PCC_FORCEINLINE void
