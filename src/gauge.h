@@ -15,5 +15,6 @@ void pcc_inc_gauge_vec(struct gauge_vec *g, const char *values[]);
 void pcc_inc_gauge_vec_delta(struct gauge_vec *g, const char *values[], double delta);
 void pcc_set_gauge_vec(struct gauge_vec *g, const char *values[], double delta);
 void pcc_print_gauge_vec(struct gauge_vec *gv);
+void set_to_current_time(struct gauge *g);
 
 #endif /* ifndef PCC_GAUGE_H */

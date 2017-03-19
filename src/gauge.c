@@ -1,5 +1,7 @@
 #include <stdbool.h>
 
+#include <sys/time.h>
+
 #include "gauge.h"
 #include "counter_private.h"
 
@@ -68,4 +70,11 @@ void pcc_print_counter_vec(struct counter_vec *cv);
 inline PCC_FORCEINLINE void
 pcc_print_gauge_vec(struct gauge_vec *gv) {
     pcc_print_counter_vec(&gv->cv);
+}
+
+void
+set_to_current_time(struct gauge *g) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    atomic_set(&g->c.value, (double)tv.tv_sec);
 }
