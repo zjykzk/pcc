@@ -6,6 +6,7 @@
 #include "value.h"
 #include "counter.h"
 #include "pccassert.h"
+#include "spinlock.h"
 
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
@@ -68,6 +69,7 @@ pcc_print_counter(struct counter *counter) {
 struct counter_vec {
     const char *name, *desc, **labels;
     short label_count;
+    struct spinlock locker;
 
     // the count of counter
     struct label_value {
@@ -155,6 +157,7 @@ void pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], do
         return;
     }
 
+    spinlock_lock(vec->locker);
     struct label_value *lv = vec->counter;
     while (lv) {
         if (lv->value_len != total_len) {
@@ -171,12 +174,14 @@ void pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], do
         }
 
         add(&lv->v, v);
+        spinlock_unlock(vec->locker);
         return;
 NEXT:
         lv = lv->next;
     }
 
     new_counter(vec, values, v);
+    spinlock_unlock(vec->locker);
 }
 
 inline PCC_FORCEINLINE void
