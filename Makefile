@@ -1,6 +1,6 @@
 CC := gcc
 CFLAGS := -g -Wall \
-	-std=gnu99 \
+	-std=c99 \
 	-Wextra -Werror \
 	-Wconversion \
 	-Wno-unused-parameter \

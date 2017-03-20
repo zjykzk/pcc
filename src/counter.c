@@ -23,7 +23,7 @@ pcc_new_counter(const char *name, const char *desc) {
 
     counter->name = name;
     counter->desc = desc;
-    bzero(&counter->value, sizeof(counter->value));
+    memset(&counter->value, 0, sizeof(counter->value));
 
     return counter;
 }
