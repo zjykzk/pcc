@@ -9,7 +9,11 @@ typedef union {
     uint64_t i;
 } pcc_value;
 
-static inline PCC_FORCEINLINE void add(volatile pcc_value *v, double d) {
+static inline PCC_FORCEINLINE void add(pcc_value *v, double d) {
+    v->v += d;
+}
+
+static inline PCC_FORCEINLINE void atomic_add(volatile pcc_value *v, double d) {
     for (;;) {
         uint64_t old = *((uint64_t*)&v->i);
         double n = v->v + d;
