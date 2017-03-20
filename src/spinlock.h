@@ -10,8 +10,8 @@ struct spinlock {
 #define spinlock_init(l) ((l) = {0})
 #define spinlock_lock(l)                        \
     do {                                        \
-    short is_free = 0;                            \
-    if (__atomic_compare_exchange_n(&l.lock,  \
+    short is_free = 0;                          \
+    if (__atomic_compare_exchange_n(&l.lock,    \
                 &is_free,                       \
                 1,                              \
                 1,                              \
@@ -20,10 +20,10 @@ struct spinlock {
 } while(1)
 
 #define spinlock_unlock(l)                      \
-    assert(l.lock == 1);                      \
+    assert(l.lock == 1);                        \
     do {                                        \
-    short is_lock = 1;                            \
-    if (__atomic_compare_exchange_n(&l.lock,  \
+    short is_lock = 1;                          \
+    if (__atomic_compare_exchange_n(&l.lock,    \
                 &is_lock,                       \
                 0,                              \
                 1,                              \
