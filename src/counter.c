@@ -7,7 +7,7 @@
 #include "counter.h"
 #include "pccassert.h"
 
-#define ADVANCE(ptr, offset) (((unsigned long)ptr)+(offset))
+#define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
 struct counter {
     const char *name, *desc;
@@ -108,13 +108,13 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]) {
     }
 
     vec->labels = label_vec;
-    char *label = (char *)ADVANCE(label_vec, (sizeof(*label_vec) * label_count));
+    char *label = ADVANCE(label_vec, (sizeof(*label_vec) * label_count));
     for (size_t i = 0; i < label_count; ++i) {
         label_vec[i] = label;
 
         size_t len = strlen(labels[i]) + 1;
         memcpy(label, labels[i], len);
-        label = (char *)ADVANCE(label, len);
+        label = ADVANCE(label, len);
     }
 
     return vec;
@@ -139,7 +139,7 @@ new_counter(struct counter_vec *vec, const char *values[], double delta) {
         const char *v = values[i];
         size_t len = strlen(v) + 1;
         memcpy(label_values, v, len);
-        label_values = (char *)ADVANCE(label_values, len);
+        label_values = ADVANCE(label_values, len);
     }
 
     lv->next = vec->counter;
@@ -167,7 +167,7 @@ void pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], do
             if (0 != memcmp(label_values, values[i], vl)) {
                 goto NEXT;
             }
-            label_values = (char *)ADVANCE(label_values, vl + 1);
+            label_values = ADVANCE(label_values, vl + 1);
         }
 
         add(&lv->v, v);
@@ -197,10 +197,10 @@ pcc_print_counter_vec(struct counter_vec* vec) {
     while (c) {
         printf("[");
         char *v = c->label_values;
-        char *last = (char *)ADVANCE(v, c->value_len);
+        char *last = ADVANCE(v, c->value_len);
         for (;;) {
             printf("%s", v);
-            v = (char *)ADVANCE(v, strlen(v) + 1);
+            v = ADVANCE(v, strlen(v) + 1);
             bool is_last = v == last;
             putchar(is_last ? ']' : ',');
 
