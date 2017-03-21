@@ -6,11 +6,16 @@
 #include "counter.h"
 #include "counter_private.h"
 #include "pccassert.h"
+#include "name.h"
 
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
 struct counter *
 pcc_new_counter(const char *name, const char *desc) {
+    if (!validate_name(name)) {
+        return NULL;
+    }
+
     struct counter *counter = malloc(sizeof(*counter));
     if (counter == NULL) {
         return NULL;
@@ -58,6 +63,16 @@ pcc_print_counter(struct counter *counter) {
 
 struct counter_vec *
 pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]) {
+    if (!validate_name(name)) {
+        return NULL;
+    }
+
+    const char **l = labels;
+    while(*l) {
+        if (!validate_label(*l)) return NULL;
+        ++l;
+    }
+
     struct counter_vec *vec = malloc(sizeof(*vec));
     if (vec == NULL) {
         return vec;
@@ -121,7 +136,7 @@ pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], doub
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
 
-    if (vec->label_count < (short)value_count) {
+    if (vec->label_count < value_count) {
         return;
     }
 
