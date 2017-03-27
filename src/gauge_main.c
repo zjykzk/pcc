@@ -15,7 +15,7 @@ main(void)
     pcc_print_gauge(c);
 
     const char *l[] = {"l1", "l2", NULL};
-    struct gauge_vec *cvec = pcc_new_gauge_vec("test vec", "test vec desc", l);
+    struct gauge_vec *cvec = pcc_new_gauge_vec("test_vec", "test vec desc", l);
     const char *v1[] = {"1", "2", NULL};
     pcc_inc_gauge_vec(cvec, v1);
     pcc_inc_gauge_vec(cvec, v1);
