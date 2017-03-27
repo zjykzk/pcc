@@ -7,17 +7,20 @@
 #include "counter_private.h"
 #include "pccassert.h"
 #include "name.h"
+#include "pccerrors.h"
 
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
 struct counter *
-pcc_new_counter(const char *name, const char *desc) {
+pcc_new_counter(const char *name, const char *desc, int *err) {
     if (!validate_name(name)) {
+        *err = INVALID_NAME;
         return NULL;
     }
 
     struct counter *counter = malloc(sizeof(*counter));
     if (counter == NULL) {
+        *err = OUT_OF_MEMORY;
         return NULL;
     }
 
@@ -62,19 +65,24 @@ pcc_print_counter(struct counter *counter) {
     } while(0)
 
 struct counter_vec *
-pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]) {
+pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], int *err) {
     if (!validate_name(name)) {
+        *err = INVALID_NAME;
         return NULL;
     }
 
     const char **l = labels;
     while(*l) {
-        if (!validate_label(*l)) return NULL;
+        if (!validate_label(*l)) {
+            *err = INVALID_NAME;
+            return NULL;
+        }
         ++l;
     }
 
     struct counter_vec *vec = malloc(sizeof(*vec));
     if (vec == NULL) {
+        *err = OUT_OF_MEMORY;
         return vec;
     }
 
@@ -88,6 +96,8 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]) {
     vec->label_count = (unsigned short)label_count;
     const char **label_vec = malloc(sizeof(*label_vec) * label_count + total_len);
     if (NULL == label_vec) {
+        *err = OUT_OF_MEMORY;
+        free(vec);
         return NULL;
     }
 
@@ -105,14 +115,14 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[]) {
 }
 
 
-static void
+static bool
 new_counter(struct counter_vec *vec, const char *values[], double delta) {
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
 
     struct label_value *lv = malloc(sizeof(*lv) + total_len);
     if (lv == NULL) {
-        return;
+        return false;
     }
 
     lv->v.v = delta;
@@ -128,15 +138,17 @@ new_counter(struct counter_vec *vec, const char *values[], double delta) {
 
     lv->next = vec->counter;
     vec->counter = lv;
+    return true;
 }
 
 void
-pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add) {
+pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add, int *err) {
     assert(v > 0);
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
 
     if (vec->label_count < value_count) {
+        *err = TOO_MANY_VALUES;
         return;
     }
 
@@ -165,18 +177,20 @@ NEXT:
         lv = lv->next;
     }
 
-    new_counter(vec, values, v);
+    if (!new_counter(vec, values, v)) {
+        *err = OUT_OF_MEMORY;
+    }
     spinlock_unlock(vec->locker);
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v) {
-    pcc_update_counter_vec_delta(vec, values, v, true);
+pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, int *err) {
+    pcc_update_counter_vec_delta(vec, values, v, true, err);
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_vec(struct counter_vec *vec, const char *values[]) {
-    pcc_inc_counter_vec_delta(vec, values, 1);
+pcc_inc_counter_vec(struct counter_vec *vec, const char *values[], int *err) {
+    pcc_inc_counter_vec_delta(vec, values, 1, err);
 }
 
 void
