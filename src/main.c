@@ -2,12 +2,11 @@
 
 #include "counter.h"
 #include "pccassert.h"
-#include "pccerrors.h"
 
 int
 main(void)
 {
-    int err;
+    pcc_error err;
     struct counter *c = pcc_new_counter("test a", "test desc", &err);
     assert(err == INVALID_NAME);
 

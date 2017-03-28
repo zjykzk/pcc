@@ -2,12 +2,11 @@
 
 #include "gauge.h"
 #include "pccassert.h"
-#include "pccerrors.h"
 
 int
 main(void)
 {
-    int err;
+    pcc_error err;
     struct gauge *c = pcc_new_gauge("test a", "test desc", &err);
     assert(err == INVALID_NAME);
     c = pcc_new_gauge("test", "test desc", &err);

@@ -7,12 +7,11 @@
 #include "counter_private.h"
 #include "pccassert.h"
 #include "name.h"
-#include "pccerrors.h"
 
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
 struct counter *
-pcc_new_counter(const char *name, const char *desc, int *err) {
+pcc_new_counter(const char *name, const char *desc, pcc_error *err) {
     if (!validate_name(name)) {
         *err = INVALID_NAME;
         return NULL;
@@ -65,7 +64,7 @@ pcc_print_counter(struct counter *counter) {
     } while(0)
 
 struct counter_vec *
-pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], int *err) {
+pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pcc_error *err) {
     if (!validate_name(name)) {
         *err = INVALID_NAME;
         return NULL;
@@ -142,7 +141,7 @@ new_counter(struct counter_vec *vec, const char *values[], double delta) {
 }
 
 void
-pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add, int *err) {
+pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add, pcc_error *err) {
     assert(v > 0);
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
@@ -184,12 +183,12 @@ NEXT:
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, int *err) {
+pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, pcc_error *err) {
     pcc_update_counter_vec_delta(vec, values, v, true, err);
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_vec(struct counter_vec *vec, const char *values[], int *err) {
+pcc_inc_counter_vec(struct counter_vec *vec, const char *values[], pcc_error *err) {
     pcc_inc_counter_vec_delta(vec, values, 1, err);
 }
 

@@ -9,9 +9,9 @@ struct gauge {
     struct counter c;
 };
 
-struct counter* pcc_new_counter(const char *name, const char *desc, int *err);
+struct counter* pcc_new_counter(const char *name, const char *desc, pcc_error *err);
 inline PCC_FORCEINLINE struct gauge*
-pcc_new_gauge(const char *name, const char *desc, int *err) {
+pcc_new_gauge(const char *name, const char *desc, pcc_error *err) {
     return (struct gauge *) pcc_new_counter(name, desc, err);
 }
 
@@ -41,28 +41,28 @@ struct gauge_vec {
     struct counter_vec cv;
 };
 
-struct counter_vec* pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], int *err);
+struct counter_vec* pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pcc_error *err);
 
 inline PCC_FORCEINLINE struct gauge_vec*
-pcc_new_gauge_vec(const char *name, const char *desc, const char *labels[], int *err) {
+pcc_new_gauge_vec(const char *name, const char *desc, const char *labels[], pcc_error *err) {
     return (struct gauge_vec *) pcc_new_counter_vec(name, desc, labels, err);
 }
 
-void pcc_inc_counter_vec(struct counter_vec *g, const char *values[], int *err);
+void pcc_inc_counter_vec(struct counter_vec *g, const char *values[], pcc_error *err);
 inline PCC_FORCEINLINE void
-pcc_inc_gauge_vec(struct gauge_vec *gv, const char *values[], int *err) {
+pcc_inc_gauge_vec(struct gauge_vec *gv, const char *values[], pcc_error *err) {
     pcc_inc_counter_vec(&gv->cv, values, err);
 }
 
-void pcc_inc_counter_vec_delta(struct counter_vec *cv, const char *values[], double delta, int *err);
+void pcc_inc_counter_vec_delta(struct counter_vec *cv, const char *values[], double delta, pcc_error *err);
 inline PCC_FORCEINLINE void
-pcc_inc_gauge_vec_delta(struct gauge_vec *gv, const char *values[], double delta, int *err) {
+pcc_inc_gauge_vec_delta(struct gauge_vec *gv, const char *values[], double delta, pcc_error *err) {
     pcc_inc_counter_vec_delta(&gv->cv, values, delta, err);
 }
 
-void pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add, int *err);
+void pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add, pcc_error *err);
 void
-pcc_set_gauge_vec(struct gauge_vec *gv, const char *values[], double delta, int *err) {
+pcc_set_gauge_vec(struct gauge_vec *gv, const char *values[], double delta, pcc_error *err) {
     pcc_update_counter_vec_delta(&gv->cv, values, delta, false, err);
 }
 
