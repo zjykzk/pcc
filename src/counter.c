@@ -8,7 +8,6 @@
 #include "pccassert.h"
 #include "name.h"
 
-#define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
 pcc_counter *
 pcc_new_counter(const char *name, const char *help, pcc_error *err) {
@@ -54,15 +53,6 @@ pcc_print_counter(pcc_counter *counter) {
             counter->value.v);
 }
 
-#define COUNT_LENGTH(values, c, l)               \
-    do {                                         \
-    for (const char **_v = values; *_v; ++_v) {  \
-        c++;                                     \
-        l += strlen(*_v);                        \
-    }                                            \
-    l += c;                                      \
-    } while(0)
-
 pcc_counter_vec *
 pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pcc_error *err) {
     if (!validate_name(name)) {
@@ -99,7 +89,7 @@ pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pc
 static bool
 new_counter(pcc_counter_vec *vec, const char *values[], double delta) {
     size_t value_count = 0, total_len = 0;
-    COUNT_LENGTH(values, value_count, total_len);
+    PCC_COUNT_LENGTH(values, value_count, total_len);
 
     struct label_value *lv = malloc(sizeof(*lv) + total_len);
     if (lv == NULL) {
@@ -114,7 +104,7 @@ new_counter(pcc_counter_vec *vec, const char *values[], double delta) {
         const char *v = values[i];
         size_t len = strlen(v) + 1;
         memcpy(label_values, v, len);
-        label_values = ADVANCE(label_values, len);
+        label_values = PCC_ADVANCE(label_values, len);
     }
 
     lv->next = vec->counter;
@@ -126,7 +116,7 @@ void
 pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double v, bool is_add, pcc_error *err) {
     assert(v > 0);
     size_t value_count = 0, total_len = 0;
-    COUNT_LENGTH(values, value_count, total_len);
+    PCC_COUNT_LENGTH(values, value_count, total_len);
 
     if (vec->h.label_count < value_count) {
         *err = TOO_MANY_VALUES;
@@ -146,7 +136,7 @@ pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double 
             if (0 != memcmp(label_values, values[i], vl)) {
                 goto NEXT;
             }
-            label_values = ADVANCE(label_values, vl + 1);
+            label_values = PCC_ADVANCE(label_values, vl + 1);
         }
 
         if (is_add) add(&lv->v, v);
@@ -187,10 +177,10 @@ pcc_print_counter_vec(pcc_counter_vec* vec) {
     while (c) {
         printf("[");
         char *v = c->label_values;
-        char *last = ADVANCE(v, c->value_len);
+        char *last = PCC_ADVANCE(v, c->value_len);
         for (;;) {
             printf("%s", v);
-            v = ADVANCE(v, strlen(v) + 1);
+            v = PCC_ADVANCE(v, strlen(v) + 1);
             bool is_last = v == last;
             putchar(is_last ? ']' : ',');
 
@@ -203,5 +193,3 @@ pcc_print_counter_vec(pcc_counter_vec* vec) {
     }
 }
 
-#undef ADVANCE
-#undef COUNT_LENGTH
