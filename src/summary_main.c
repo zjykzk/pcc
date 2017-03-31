@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "summary.h"
 #include "pccassert.h"
 #include "pccerrors.h"
@@ -12,9 +14,20 @@ main(void) {
     s = pcc_new_summary("summary_test", "help", buckets,
             sizeof(buckets)/sizeof(buckets[0]), &err);
     pcc_summary_print(s);
+
+    printf("\n-------test:%g\n", 0.01);
     pcc_summary_observe(s, 0.01);
+    pcc_summary_print(s);
+
+    printf("\n-------test:%g\n", 0.1);
     pcc_summary_observe(s, 0.1);
+    pcc_summary_print(s);
+
+    printf("\n-------test:%g\n", 0.12);
     pcc_summary_observe(s, 0.12);
+    pcc_summary_print(s);
+
+    printf("\n-------test:%g\n", 100.0);
     pcc_summary_observe(s, 100);
     pcc_summary_print(s);
 }

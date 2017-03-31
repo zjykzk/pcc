@@ -13,9 +13,10 @@ typedef struct summary {
     size_t bucket_count;
     struct spinlock lock;
     pcc_value sum;
-    pcc_value *counts;
     double buckets[0];
 } pcc_summary;
+
+#define COUNTS(s) (pcc_value*)((unsigned char*)s + sizeof(*s) + s->bucket_count * sizeof(double))
 
 pcc_summary*
 pcc_new_summary(const char *name, const char *help, double buckets[], size_t count, pcc_error *err) {
@@ -39,17 +40,18 @@ pcc_new_summary(const char *name, const char *help, double buckets[], size_t cou
     s->lock.lock=0;
     init_value(&s->sum, 0);
     memcpy(s->buckets, buckets, bucket_sz);
-    s->counts = (pcc_value*)((unsigned char*)s + bucket_sz + sizeof(*s));
-    memset(s->counts, 0, value_sz);
+    pcc_value *counts = COUNTS(s);
+    memset(counts, 0, value_sz);
     return s;
 }
 
 void
 pcc_summary_observe(pcc_summary *s, double v) {
+    pcc_value *c = COUNTS(s);
     for (size_t i = 0; i < s->bucket_count; ++i) {
         if (s->buckets[i] > v) {
             spinlock_lock(s->lock);
-            add(s->counts + i, 1);
+            add(c + i, 1);
             add(&s->sum, v);
             spinlock_unlock(s->lock);
             return;
@@ -57,7 +59,7 @@ pcc_summary_observe(pcc_summary *s, double v) {
     }
 
     spinlock_lock(s->lock);
-    add(s->counts + s->bucket_count, 1);
+    add(c + s->bucket_count, 1);
     add(&s->sum, v);
     spinlock_unlock(s->lock);
 }
@@ -65,15 +67,18 @@ pcc_summary_observe(pcc_summary *s, double v) {
 void
 pcc_summary_print(pcc_summary *s) {
     printf("name:%s,help:%s\n", s->name, s->help);
-    printf("sum:%g\n", s->sum.v);
+    printf("sum:%g\n", value(&s->sum));
     printf("buckets:");
     for (size_t i = 0, cnt = s->bucket_count; i < cnt; ++i) {
         printf("%g", s->buckets[i]);
         putchar(i == cnt - 1 ? '\n' : ',');
     }
     printf("counts:");
+    pcc_value *c = COUNTS(s);
     for (size_t i = 0, cnt = s->bucket_count + 1; i < cnt; ++i) {
-        printf("%g", s->counts[i].v);
+        printf("%g", c[i].v);
         putchar(i == cnt - 1 ? '\n' : ',');
     }
 }
+
+#undef COUNTS
