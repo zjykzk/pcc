@@ -3,10 +3,10 @@
 #include "value.h"
 #include "spinlock.h"
 
-struct counter {
+typedef struct counter {
     const char *name, *desc;
     pcc_value value;
-};
+} pcc_counter;
 
 // `labels` memory layout
 //
@@ -26,7 +26,7 @@ struct counter {
 // |      ...       |
 // +----------------+
 //
-struct counter_vec {
+typedef struct counter_vec {
     const char *name, *desc, **labels;
     unsigned short label_count;
     struct spinlock locker;
@@ -38,7 +38,7 @@ struct counter_vec {
         size_t value_len;
         char label_values[0];
     } *counter;
-};
+} pcc_counter_vec;
 
 
 #endif /* ifndef PCC_COUNTER_PRIVATE */
