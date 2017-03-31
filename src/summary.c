@@ -127,7 +127,39 @@ typedef struct summary_vec {
     } *metrics;
 } pcc_summary_vec;
 
-pcc_summary_vec* pcc_new_summary_vec(const char *name, const char *help, double buckets[], size_t count, const char *labels[], pcc_error *err);
-void pcc_summary_vec_observe(pcc_summary_vec *sv, const char *values[], double v);
+pcc_summary_vec*
+pcc_new_summary_vec(const char *name, const char *help, double buckets[], size_t count, const char *labels[], pcc_error *err) {
+    if (!validate_name(name)) {
+        *err = INVALID_NAME;
+        return NULL;
+    }
+
+    void *buf = malloc(sizeof(pcc_summary_vec) + sizeof(struct header) + count * sizeof(double));
+    if (buf == NULL) {
+        *err = OUT_OF_MEMORY;
+        return NULL;
+    }
+
+    pcc_summary_vec *sv = buf;
+
+    struct header *header = (struct header *)(((unsigned char *) buf) + sizeof(*sv));
+
+    init_vec_header(&header->h, name, help, labels, err);
+    if (*err == OUT_OF_MEMORY) {
+        return NULL;
+    }
+
+    header->bucket_count = count;
+    memcpy(header->buckets, buckets, count * sizeof(double));
+
+    sv->header = header;
+    sv->metrics = NULL;
+
+    return sv;
+}
+void
+pcc_summary_vec_observe(pcc_summary_vec *sv, const char *values[], double v) {
+// TODO
+}
 void pcc_summary_vec_print(pcc_summary_vec *sv);
 
