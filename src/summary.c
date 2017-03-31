@@ -4,10 +4,25 @@
 #include <stdio.h>
 
 #include "value.h"
+#include "vec.h"
 #include "pccerrors.h"
 #include "spinlock.h"
 #include "name.h"
 
+// layout
+// +----------+
+// | bucket 0 |
+// +----------+
+// | ...      |
+// +----------+
+// | bucket n |
+// +----------+
+// | count 0  |
+// +----------+
+// | ...      |
+// +----------+
+// | count n  |
+// +----------+
 typedef struct summary {
     const char *name, *help;
     size_t bucket_count;
@@ -80,5 +95,39 @@ pcc_summary_print(pcc_summary *s) {
         putchar(i == cnt - 1 ? '\n' : ',');
     }
 }
-
 #undef COUNTS
+
+typedef struct summary_vec {
+    struct header {
+        struct vec_header h;
+        size_t bucket_count;
+        double buckets[0];
+    } *header;
+
+    // layout
+    // +----------+
+    // | label 0  |
+    // +----------+
+    // | ...      |
+    // +----------+
+    // | label n  |
+    // +----------+
+    // | count 0  |
+    // +----------+
+    // | ...      |
+    // +----------+
+    // | count n  |
+    // +----------+
+    // the count of counter
+    struct label_value {
+        pcc_value sum;
+        struct label_value *next;
+        size_t value_len;
+        char label_values[0];
+    } *metrics;
+} pcc_summary_vec;
+
+pcc_summary_vec* pcc_new_summary_vec(const char *name, const char *help, double buckets[], size_t count, const char *labels[], pcc_error *err);
+void pcc_summary_vec_observe(pcc_summary_vec *sv, const char *values[], double v);
+void pcc_summary_vec_print(pcc_summary_vec *sv);
+
