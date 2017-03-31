@@ -50,4 +50,8 @@ static inline PCC_FORCEINLINE void atomic_set(pcc_value *v, double d) {
     }
 }
 
+static inline PCC_FORCEINLINE double value(pcc_value *v) {
+    return v->v;
+}
+
 #endif /* ifndef PCC_VALUE_H */
