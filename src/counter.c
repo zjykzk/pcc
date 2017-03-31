@@ -10,14 +10,14 @@
 
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
-struct counter *
+pcc_counter *
 pcc_new_counter(const char *name, const char *desc, pcc_error *err) {
     if (!validate_name(name)) {
         *err = INVALID_NAME;
         return NULL;
     }
 
-    struct counter *counter = malloc(sizeof(*counter));
+    pcc_counter *counter = malloc(sizeof(*counter));
     if (counter == NULL) {
         *err = OUT_OF_MEMORY;
         return NULL;
@@ -31,23 +31,23 @@ pcc_new_counter(const char *name, const char *desc, pcc_error *err) {
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter(struct counter *counter) {
+pcc_inc_counter(pcc_counter *counter) {
     atomic_add(&counter->value, 1);
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_delta(struct counter *counter, double v) {
+pcc_inc_counter_delta(pcc_counter *counter, double v) {
     assert(v > 0);
     atomic_add(&counter->value, v);
 }
 
 PCC_FORCEINLINE void
-pcc_set_counter_delta(struct counter *counter, double v) {
+pcc_set_counter_delta(pcc_counter *counter, double v) {
     atomic_set(&counter->value, v);
 }
 
 void
-pcc_print_counter(struct counter *counter) {
+pcc_print_counter(pcc_counter *counter) {
     printf("name:%s\ndesc:%s\nvalue:%g\n",
             counter->name,
             counter->desc,
@@ -63,7 +63,7 @@ pcc_print_counter(struct counter *counter) {
     l += c;                                      \
     } while(0)
 
-struct counter_vec *
+pcc_counter_vec *
 pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pcc_error *err) {
     if (!validate_name(name)) {
         *err = INVALID_NAME;
@@ -79,7 +79,7 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pc
         ++l;
     }
 
-    struct counter_vec *vec = malloc(sizeof(*vec));
+    pcc_counter_vec *vec = malloc(sizeof(*vec));
     if (vec == NULL) {
         *err = OUT_OF_MEMORY;
         return vec;
@@ -115,7 +115,7 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pc
 
 
 static bool
-new_counter(struct counter_vec *vec, const char *values[], double delta) {
+new_counter(pcc_counter_vec *vec, const char *values[], double delta) {
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
 
@@ -141,7 +141,7 @@ new_counter(struct counter_vec *vec, const char *values[], double delta) {
 }
 
 void
-pcc_update_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, bool is_add, pcc_error *err) {
+pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double v, bool is_add, pcc_error *err) {
     assert(v > 0);
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
@@ -183,17 +183,17 @@ NEXT:
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_vec_delta(struct counter_vec *vec, const char *values[], double v, pcc_error *err) {
+pcc_inc_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double v, pcc_error *err) {
     pcc_update_counter_vec_delta(vec, values, v, true, err);
 }
 
 inline PCC_FORCEINLINE void
-pcc_inc_counter_vec(struct counter_vec *vec, const char *values[], pcc_error *err) {
+pcc_inc_counter_vec(pcc_counter_vec *vec, const char *values[], pcc_error *err) {
     pcc_inc_counter_vec_delta(vec, values, 1, err);
 }
 
 void
-pcc_print_counter_vec(struct counter_vec* vec) {
+pcc_print_counter_vec(pcc_counter_vec* vec) {
     printf("name:%s\tdesc:%s\n", vec->name, vec->desc);
     printf("labels:[");
     for (int i = 0, len = vec->label_count; i < len; i++) {
