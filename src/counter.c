@@ -73,7 +73,7 @@ pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pc
     const char **l = labels;
     while(*l) {
         if (!validate_label(*l)) {
-            *err = INVALID_NAME;
+            *err = INVALID_LABEL;
             return NULL;
         }
         ++l;
