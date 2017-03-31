@@ -85,31 +85,13 @@ pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pc
         return vec;
     }
 
-    vec->name = name;
-    vec->help = help;
-    vec->counter = NULL;
-
-    size_t label_count = 0, total_len = 0;
-    COUNT_LENGTH(labels, label_count, total_len);
-
-    vec->label_count = (unsigned short)label_count;
-    const char **label_vec = malloc(sizeof(*label_vec) * label_count + total_len);
-    if (NULL == label_vec) {
-        *err = OUT_OF_MEMORY;
+    init_vec_header(&vec->h, name, help, labels, err);
+    if (*err == OUT_OF_MEMORY) {
         free(vec);
         return NULL;
     }
 
-    vec->labels = label_vec;
-    char *label = ADVANCE(label_vec, (sizeof(*label_vec) * label_count));
-    for (size_t i = 0; i < label_count; ++i) {
-        label_vec[i] = label;
-
-        size_t len = strlen(labels[i]) + 1;
-        memcpy(label, labels[i], len);
-        label = ADVANCE(label, len);
-    }
-
+    vec->counter = NULL;
     return vec;
 }
 
@@ -146,12 +128,12 @@ pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double 
     size_t value_count = 0, total_len = 0;
     COUNT_LENGTH(values, value_count, total_len);
 
-    if (vec->label_count < value_count) {
+    if (vec->h.label_count < value_count) {
         *err = TOO_MANY_VALUES;
         return;
     }
 
-    spinlock_lock(vec->locker);
+    spinlock_lock(vec->h.locker);
     struct label_value *lv = vec->counter;
     while (lv) {
         if (lv->value_len != total_len) {
@@ -170,7 +152,7 @@ pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double 
         if (is_add) add(&lv->v, v);
         else set(&lv->v, v);
 
-        spinlock_unlock(vec->locker);
+        spinlock_unlock(vec->h.locker);
         return;
 NEXT:
         lv = lv->next;
@@ -179,7 +161,7 @@ NEXT:
     if (!new_counter(vec, values, v)) {
         *err = OUT_OF_MEMORY;
     }
-    spinlock_unlock(vec->locker);
+    spinlock_unlock(vec->h.locker);
 }
 
 inline PCC_FORCEINLINE void
@@ -194,10 +176,10 @@ pcc_inc_counter_vec(pcc_counter_vec *vec, const char *values[], pcc_error *err) 
 
 void
 pcc_print_counter_vec(pcc_counter_vec* vec) {
-    printf("name:%s\thelp:%s\n", vec->name, vec->help);
+    printf("name:%s\thelp:%s\n", vec->h.name, vec->h.help);
     printf("labels:[");
-    for (int i = 0, len = vec->label_count; i < len; i++) {
-        printf("%s", vec->labels[i]);
+    for (int i = 0, len = vec->h.label_count; i < len; i++) {
+        printf("%s", vec->h.labels[i]);
         putchar(i == len - 1 ? ']' : ',');
     }
     puts("\nvalues:");

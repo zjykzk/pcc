@@ -1,6 +1,7 @@
 #ifndef PCC_COUNTER_PRIVATE
 #define PCC_COUNTER_PRIVATE
 #include "value.h"
+#include "vec.h"
 #include "spinlock.h"
 
 typedef struct counter {
@@ -27,9 +28,7 @@ typedef struct counter {
 // +----------------+
 //
 typedef struct counter_vec {
-    const char *name, *help, **labels;
-    unsigned short label_count;
-    struct spinlock locker;
+    struct vec_header h;
 
     // the count of counter
     struct label_value {
