@@ -11,7 +11,7 @@
 #define ADVANCE(ptr, offset) (((char *)ptr)+(offset))
 
 pcc_counter *
-pcc_new_counter(const char *name, const char *desc, pcc_error *err) {
+pcc_new_counter(const char *name, const char *help, pcc_error *err) {
     if (!validate_name(name)) {
         *err = INVALID_NAME;
         return NULL;
@@ -24,7 +24,7 @@ pcc_new_counter(const char *name, const char *desc, pcc_error *err) {
     }
 
     counter->name = name;
-    counter->desc = desc;
+    counter->help = help;
     memset(&counter->value, 0, sizeof(counter->value));
 
     return counter;
@@ -48,9 +48,9 @@ pcc_set_counter_delta(pcc_counter *counter, double v) {
 
 void
 pcc_print_counter(pcc_counter *counter) {
-    printf("name:%s\ndesc:%s\nvalue:%g\n",
+    printf("name:%s\nhelp:%s\nvalue:%g\n",
             counter->name,
-            counter->desc,
+            counter->help,
             counter->value.v);
 }
 
@@ -64,7 +64,7 @@ pcc_print_counter(pcc_counter *counter) {
     } while(0)
 
 pcc_counter_vec *
-pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pcc_error *err) {
+pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pcc_error *err) {
     if (!validate_name(name)) {
         *err = INVALID_NAME;
         return NULL;
@@ -86,7 +86,7 @@ pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pc
     }
 
     vec->name = name;
-    vec->desc = desc;
+    vec->help = help;
     vec->counter = NULL;
 
     size_t label_count = 0, total_len = 0;
@@ -194,7 +194,7 @@ pcc_inc_counter_vec(pcc_counter_vec *vec, const char *values[], pcc_error *err) 
 
 void
 pcc_print_counter_vec(pcc_counter_vec* vec) {
-    printf("name:%s\tdesc:%s\n", vec->name, vec->desc);
+    printf("name:%s\thelp:%s\n", vec->name, vec->help);
     printf("labels:[");
     for (int i = 0, len = vec->label_count; i < len; i++) {
         printf("%s", vec->labels[i]);

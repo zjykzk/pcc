@@ -9,10 +9,10 @@ typedef struct gauge {
     pcc_counter c;
 } pcc_gauge;
 
-pcc_counter* pcc_new_counter(const char *name, const char *desc, pcc_error *err);
+pcc_counter* pcc_new_counter(const char *name, const char *help, pcc_error *err);
 inline PCC_FORCEINLINE pcc_gauge*
-pcc_new_gauge(const char *name, const char *desc, pcc_error *err) {
-    return (pcc_gauge *) pcc_new_counter(name, desc, err);
+pcc_new_gauge(const char *name, const char *help, pcc_error *err) {
+    return (pcc_gauge *) pcc_new_counter(name, help, err);
 }
 
 void pcc_inc_counter(pcc_counter *c);
@@ -41,11 +41,11 @@ typedef struct gauge_vec {
     pcc_counter_vec cv;
 } pcc_gauge_vec;
 
-pcc_counter_vec* pcc_new_counter_vec(const char *name, const char *desc, const char *labels[], pcc_error *err);
+pcc_counter_vec* pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pcc_error *err);
 
 inline PCC_FORCEINLINE pcc_gauge_vec*
-pcc_new_gauge_vec(const char *name, const char *desc, const char *labels[], pcc_error *err) {
-    return (pcc_gauge_vec *) pcc_new_counter_vec(name, desc, labels, err);
+pcc_new_gauge_vec(const char *name, const char *help, const char *labels[], pcc_error *err) {
+    return (pcc_gauge_vec *) pcc_new_counter_vec(name, help, labels, err);
 }
 
 void pcc_inc_counter_vec(pcc_counter_vec *g, const char *values[], pcc_error *err);

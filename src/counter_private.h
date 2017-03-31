@@ -4,7 +4,7 @@
 #include "spinlock.h"
 
 typedef struct counter {
-    const char *name, *desc;
+    const char *name, *help;
     pcc_value value;
 } pcc_counter;
 
@@ -27,7 +27,7 @@ typedef struct counter {
 // +----------------+
 //
 typedef struct counter_vec {
-    const char *name, *desc, **labels;
+    const char *name, *help, **labels;
     unsigned short label_count;
     struct spinlock locker;
 
