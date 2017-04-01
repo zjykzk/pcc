@@ -5,9 +5,9 @@
 #include "gauge.h"
 #include "counter_private.h"
 
-typedef struct gauge {
+struct gauge {
     pcc_counter c;
-} pcc_gauge;
+};
 
 pcc_counter* pcc_new_counter(const char *name, const char *help, pcc_error *err);
 inline PCC_FORCEINLINE pcc_gauge*
@@ -37,9 +37,9 @@ pcc_print_gauge(pcc_gauge *g) {
     pcc_print_counter(&g->c);
 }
 
-typedef struct gauge_vec {
+struct gauge_vec {
     pcc_counter_vec cv;
-} pcc_gauge_vec;
+};
 
 pcc_counter_vec* pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pcc_error *err);
 
