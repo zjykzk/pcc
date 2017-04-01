@@ -10,7 +10,7 @@ CFLAGS := -g -Wall \
 	-march=native
 
 
-OBJECTS := counter.o gauge.o
+OBJECTS := counter.o gauge.o summary.o
 SRC_DIR := src
 
 .PHONY: clean
@@ -25,6 +25,12 @@ counter: counter.o $(SRC_DIR)/main.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 gauge: gauge.o counter.o $(SRC_DIR)/gauge_main.c
+	$(CC) $(CFLAGS) -o $@ $^
+
+summary.o: $(SRC_DIR)/summary.c $(SRC_DIR)/summary.h
+	$(CC) $(CFLAGS) -c $^
+
+summary: summary.o $(SRC_DIR)/summary_main.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
