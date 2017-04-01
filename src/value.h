@@ -9,6 +9,10 @@ typedef union {
     uint64_t i;
 } pcc_value;
 
+static inline PCC_FORCEINLINE void init_value(pcc_value *pv, double v) {
+    pv->v = v;
+}
+
 static inline PCC_FORCEINLINE void add(pcc_value *v, double d) {
     v->v += d;
 }
@@ -45,4 +49,5 @@ static inline PCC_FORCEINLINE void atomic_set(pcc_value *v, double d) {
         }
     }
 }
+
 #endif /* ifndef PCC_VALUE_H */
