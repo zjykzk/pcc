@@ -81,7 +81,7 @@ pcc_new_counter_vec(const char *name, const char *help, const char *labels[], pc
         return NULL;
     }
 
-    vec->counter = NULL;
+    vec->elem = NULL;
     return vec;
 }
 
@@ -91,24 +91,15 @@ new_counter(pcc_counter_vec *vec, const char *values[], double delta) {
     size_t value_count = 0, total_len = 0;
     PCC_COUNT_LENGTH(values, value_count, total_len);
 
-    struct label_value *lv = malloc(sizeof(*lv) + total_len);
-    if (lv == NULL) {
+    struct counter_elem *elem = malloc(sizeof(*elem) + total_len);
+    if (elem == NULL) {
         return false;
     }
+    init_vec_label_value(&elem->lv, values, value_count, total_len);
 
-    lv->v.v = delta;
-    lv->value_len = total_len;
-
-    char *label_values = lv->label_values;
-    for (size_t i = 0; i < value_count; i++) {
-        const char *v = values[i];
-        size_t len = strlen(v) + 1;
-        memcpy(label_values, v, len);
-        label_values = PCC_ADVANCE(label_values, len);
-    }
-
-    lv->next = vec->counter;
-    vec->counter = lv;
+    set(&elem->v, delta);
+    if (vec->elem) elem->lv.next = &vec->elem->lv;
+    vec->elem = elem;
     return true;
 }
 
@@ -124,7 +115,8 @@ pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double 
     }
 
     spinlock_lock(vec->h.locker);
-    struct label_value *lv = vec->counter;
+    struct label_value *lv = NULL;
+    if (vec->elem) lv = &vec->elem->lv;
     while (lv) {
         if (lv->value_len != total_len) {
             goto NEXT;
@@ -139,8 +131,9 @@ pcc_update_counter_vec_delta(pcc_counter_vec *vec, const char *values[], double 
             label_values = PCC_ADVANCE(label_values, vl + 1);
         }
 
-        if (is_add) add(&lv->v, v);
-        else set(&lv->v, v);
+        struct counter_elem *counter = PCC_CONTAINER_OF(lv, struct counter_elem, lv);
+        if (is_add) add(&counter->v, v);
+        else set(&counter->v, v);
 
         spinlock_unlock(vec->h.locker);
         return;
@@ -173,11 +166,12 @@ pcc_print_counter_vec(pcc_counter_vec* vec) {
         putchar(i == len - 1 ? ']' : ',');
     }
     puts("\nvalues:");
-    struct label_value *c = vec->counter;
-    while (c) {
+    struct label_value *lv = &vec->elem->lv;
+    while (lv) {
+        printf("value length:%lu\n", lv->value_len);
         printf("[");
-        char *v = c->label_values;
-        char *last = PCC_ADVANCE(v, c->value_len);
+        char *v = lv->label_values;
+        char *last = PCC_ADVANCE(v, lv->value_len);
         for (;;) {
             printf("%s", v);
             v = PCC_ADVANCE(v, strlen(v) + 1);
@@ -188,8 +182,8 @@ pcc_print_counter_vec(pcc_counter_vec* vec) {
                 break;
             }
         }
-        printf(":%g\n", c->v.v);
-        c = c->next;
+        printf(":%g\n", value(&PCC_CONTAINER_OF(lv, struct counter_elem, lv)->v));
+        lv = lv->next;
     }
 }
 

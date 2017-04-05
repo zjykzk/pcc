@@ -4,11 +4,18 @@
 #include <string.h>
 #include "spinlock.h"
 #include "pccerrors.h"
+#include "value.h"
 
 struct vec_header {
     const char *name, *help, **labels;
     unsigned short label_count;
     struct spinlock locker;
+};
+
+struct label_value {
+    struct label_value *next;
+    size_t value_len;
+    char label_values[0];
 };
 
 #define PCC_ADVANCE(ptr, offset) (((char *)ptr)+(offset))
@@ -49,5 +56,21 @@ init_vec_header(struct vec_header *h, const char *name, const char *help, const 
     }
 
 }
+
+static inline void
+init_vec_label_value(struct label_value *lv, const char *values[], size_t value_count, size_t total_len) {
+    lv->value_len = total_len;
+    char *label_values = lv->label_values;
+    for (size_t i = 0; i < value_count; i++) {
+        const char *v = values[i];
+        size_t len = strlen(v) + 1;
+        memcpy(label_values, v, len);
+        label_values = PCC_ADVANCE(label_values, len);
+    }
+    lv->next = NULL;
+}
+
+#define PCC_CONTAINER_OF(mp, ct, f) ((ct *)PCC_ADVANCE(mp, -(size_t)&((ct *)0)->f))
+
 
 #endif /* ifndef PCC_VEC_H */

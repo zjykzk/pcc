@@ -31,12 +31,10 @@ typedef struct counter_vec {
     struct vec_header h;
 
     // the count of counter
-    struct label_value {
+    struct counter_elem {
         pcc_value v;
-        struct label_value *next;
-        size_t value_len;
-        char label_values[0];
-    } *counter;
+        struct label_value lv;
+    } *elem;
 } pcc_counter_vec;
 
 

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "counter.h"
 #include "pccassert.h"
@@ -22,13 +23,17 @@ main(void)
     const char *v1[] = {"1", "2", NULL};
     pcc_inc_counter_vec(cvec, v1, &err);
     pcc_inc_counter_vec(cvec, v1, &err);
+    puts("\n--------------------");
     pcc_print_counter_vec(cvec);
     pcc_inc_counter_vec_delta(cvec, v1, 20, &err);
+    puts("\n--------------------");
     pcc_print_counter_vec(cvec);
     const char *v2[] = {"11", "22", NULL};
     pcc_inc_counter_vec(cvec, v2, &err);
+    puts("\n--------------------");
     pcc_print_counter_vec(cvec);
     pcc_inc_counter_vec_delta(cvec, v2, 100, &err);
+    puts("\n--------------------");
     pcc_print_counter_vec(cvec);
     //pcc_inc_counter_vec_delta(cvec, v2, -1);
 
