@@ -19,7 +19,7 @@ static inline PCC_FORCEINLINE void add(pcc_value *v, double d) {
 
 static inline PCC_FORCEINLINE void atomic_add(pcc_value *v, double d) {
     for (;;) {
-        uint64_t old = *((uint64_t*)&v->i);
+        uint64_t old = v->i;
         double n = v->v + d;
         if (__atomic_compare_exchange(&v->i,
                 &old,
@@ -38,7 +38,7 @@ static inline PCC_FORCEINLINE void set(pcc_value *v, double d) {
 
 static inline PCC_FORCEINLINE void atomic_set(pcc_value *v, double d) {
     for (;;) {
-        uint64_t old = *((uint64_t*)&v->i);
+        uint64_t old = v->i;
         if (__atomic_compare_exchange(&v->i,
                 &old,
                 (uint64_t *)&d,
