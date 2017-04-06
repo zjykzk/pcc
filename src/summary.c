@@ -119,12 +119,10 @@ typedef struct summary_vec {
     // | count n  |
     // +----------+
     // the count of counter
-    struct label_value {
+    struct summery_elem {
         pcc_value sum;
-        struct label_value *next;
-        size_t value_len;
-        char label_values[0];
-    } *metrics;
+        struct label_value lv;
+    } *elem;
 } pcc_summary_vec;
 
 pcc_summary_vec*
@@ -153,7 +151,7 @@ pcc_new_summary_vec(const char *name, const char *help, double buckets[], size_t
     memcpy(header->buckets, buckets, count * sizeof(double));
 
     sv->header = header;
-    sv->metrics = NULL;
+    sv->elem = NULL;
 
     return sv;
 }
